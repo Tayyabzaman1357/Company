@@ -1,22 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { LogOut, Search, MapPin, Building, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
-
+import { db } from '../../firebase';
+import { collection, getDocs } from 'firebase/firestore';
+import toast from 'react-hot-toast';
 
 export default function UserDashboard() {
   const { logout, currentUser } = useAuth();
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  // Mock companies
-  const companies = [
-    { id: 1, name: 'HealthCare Plus', address: '123 Main St, NY', totalTokens: 50, currentToken: 12, estWait: '45 mins' },
-    { id: 2, name: 'Dr. Smith Clinic', address: '456 Park Ave, NY', totalTokens: 30, currentToken: 30, estWait: 'Full' },
-    { id: 3, name: 'City Hospital', address: '789 Broadway, NY', totalTokens: 100, currentToken: 45, estWait: '2 hrs' },
-  ];
+  useEffect(() => {
+    const fetchAllCompanies = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "companies"));
+        const fetchedCompanies = [];
+        querySnapshot.forEach((doc) => {
+          fetchedCompanies.push({ id: doc.id, ...doc.data() });
+        });
+        setCompanies(fetchedCompanies);
+      } catch (error) {
+        toast.error("Failed to load companies");
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllCompanies();
+  }, []);
 
   const filtered = companies.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -33,7 +50,6 @@ export default function UserDashboard() {
             <LogOut size={18} /> Logout
           </button>
         </div>
-
       </header>
 
       <div style={{ position: 'relative', marginBottom: '3rem', maxWidth: '600px', margin: '0 auto 3rem auto' }}>
@@ -48,57 +64,67 @@ export default function UserDashboard() {
         <Search size={24} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
-        {filtered.map((company, i) => (
-          <motion.div 
-            key={company.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="glass-card"
-            style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ width: '50px', height: '50px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <Building size={24} color="var(--primary)" />
-              </div>
-              <div>
-                <h3 style={{ margin: 0 }}>{company.name}</h3>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                  <MapPin size={12} /> {company.address}
-                </span>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Status</div>
-                <div style={{ fontWeight: 'bold', color: company.currentToken >= company.totalTokens ? 'var(--danger)' : 'var(--accent)' }}>
-                  {company.currentToken} / {company.totalTokens}
+      {loading ? (
+        <div style={{ textAlign: 'center', marginTop: '5rem', color: 'var(--text-muted)' }}>
+          <p>Loading available companies...</p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div style={{ textAlign: 'center', marginTop: '5rem', color: 'var(--text-muted)' }}>
+          <h2>No companies found</h2>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+          {filtered.map((company, i) => (
+            <motion.div 
+              key={company.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="glass-card"
+              style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ width: '50px', height: '50px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <Building size={24} color="var(--primary)" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0 }}>{company.name}</h3>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                    <MapPin size={12} /> {company.address}
+                  </span>
                 </div>
               </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Est. Wait</div>
-                <div style={{ fontWeight: 'bold' }}>{company.estWait}</div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Status</div>
+                  <div style={{ fontWeight: 'bold', color: company.currentToken >= company.totalTokens ? 'var(--danger)' : 'var(--accent)' }}>
+                    {company.currentToken} / {company.totalTokens}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Est. Wait</div>
+                  <div style={{ fontWeight: 'bold' }}>{company.estWait || '30 mins'}</div>
+                </div>
               </div>
-            </div>
 
-            <button 
-              className="glass"
-              style={{ 
-                marginTop: 'auto', width: '100%', padding: '0.8rem', borderRadius: '8px', 
-                cursor: company.currentToken >= company.totalTokens ? 'not-allowed' : 'pointer', 
-                background: company.currentToken >= company.totalTokens ? 'rgba(255,255,255,0.1)' : 'var(--primary)', 
-                color: 'white', border: 'none', fontWeight: 'bold' 
-              }}
-              onClick={() => navigate(`/user/company/${company.id}`)}
-            >
-              {company.currentToken >= company.totalTokens ? 'Tokens Full Today' : 'Book Token'}
-            </button>
+              <button 
+                className="glass"
+                style={{ 
+                  marginTop: 'auto', width: '100%', padding: '0.8rem', borderRadius: '8px', 
+                  cursor: company.currentToken >= company.totalTokens ? 'not-allowed' : 'pointer', 
+                  background: company.currentToken >= company.totalTokens ? 'rgba(255,255,255,0.1)' : 'var(--primary)', 
+                  color: 'white', border: 'none', fontWeight: 'bold' 
+                }}
+                onClick={() => navigate(`/user/company/${company.id}`)}
+              >
+                {company.currentToken >= company.totalTokens ? 'Tokens Full Today' : 'Book Token'}
+              </button>
 
-          </motion.div>
-        ))}
-      </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

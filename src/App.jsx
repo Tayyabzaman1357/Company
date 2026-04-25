@@ -4,32 +4,38 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 
 // Pages
-import Login from './pages/Login';
-import Home from './pages/Home';
-import CompanyDashboard from './pages/company/CompanyDashboard';
-import CompanyTokens from './pages/company/CompanyTokens';
-import UserDashboard from './pages/user/UserDashboard';
-import CompanyDetails from './pages/user/CompanyDetails';
-import MyTokens from './pages/user/MyTokens';
+
+import Login from './Pages/Login';
+import Home from './Pages/Home';
+import CompanyDashboard from './Pages/company/CompanyDashboard';
+import CompanyTokens from './Pages/company/CompanyTokens';
+import UserDashboard from './Pages/user/UserDashboard';
+import CompanyDetails from './Pages/user/CompanyDetails';
+import MyTokens from './Pages/user/MyTokens';
+import Signup from './Pages/Signup';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useAuth();
-  if (!currentUser) return <Navigate to="/login" />;
+  if (!currentUser) return <Navigate to="/signup" />;
   return children;
 };
 
 // Role Route Component
 const RoleRoute = ({ children, allowedRole }) => {
   const { currentUser, role } = useAuth();
-  if (!currentUser) return <Navigate to="/login" />;
-  if (role !== allowedRole) return <Navigate to="/" />;
+  if (!currentUser) return <Navigate to="/signup" />;
+  
+  const normalizedRole = typeof role === 'string' ? role.toLowerCase() : 'user';
+  if (normalizedRole !== allowedRole.toLowerCase()) return <Navigate to="/" />;
+  
   return children;
 };
 
 function AppRoutes() {
   return (
     <Routes>
+      <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
       
@@ -66,8 +72,10 @@ function AppRoutes() {
 }
 
 function App() {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+  
   return (
-    <Router>
+    <Router basename={base}>
       <AuthProvider>
         <Toaster position="top-right" toastOptions={{
           style: {
