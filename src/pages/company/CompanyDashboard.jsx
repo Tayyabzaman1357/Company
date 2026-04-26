@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Plus, Building, LogOut, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import AddCompanyModal from '../../Components/company/AddCompanyModal';
+import AddCompanyModal from '../../components/company/AddCompanyModal';
 import { db, storage } from '../../firebase';
 import { collection, query, where, getDocs, addDoc, doc, setDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';

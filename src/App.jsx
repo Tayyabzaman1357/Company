@@ -4,14 +4,14 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 
 // Lazy-loaded pages (enables code splitting per route)
-const Login = lazy(() => import('./Pages/Login'));
-const Home = lazy(() => import('./Pages/Home'));
-const Signup = lazy(() => import('./Pages/Signup'));
-const CompanyDashboard = lazy(() => import('./Pages/company/CompanyDashboard'));
-const CompanyTokens = lazy(() => import('./Pages/company/CompanyTokens'));
-const UserDashboard = lazy(() => import('./Pages/user/UserDashboard'));
-const CompanyDetails = lazy(() => import('./Pages/user/CompanyDetails'));
-const MyTokens = lazy(() => import('./Pages/user/MyTokens'));
+const Login = lazy(() => import('./pages/Login'));
+const Home = lazy(() => import('./pages/Home'));
+const Signup = lazy(() => import('./pages/Signup'));
+const CompanyDashboard = lazy(() => import('./pages/company/CompanyDashboard'));
+const CompanyTokens = lazy(() => import('./pages/company/CompanyTokens'));
+const UserDashboard = lazy(() => import('./pages/user/UserDashboard'));
+const CompanyDetails = lazy(() => import('./pages/user/CompanyDetails'));
+const MyTokens = lazy(() => import('./pages/user/MyTokens'));
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
