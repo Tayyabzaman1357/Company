@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase';
 
 export default function Signup() {
   const { signup, currentUser } = useAuth();
@@ -31,8 +33,6 @@ export default function Signup() {
       setLoading(true);
       await signup(formData.email, formData.password, formData.name, formData.role);
       // Log out immediately so they have to log in
-      const { getAuth, signOut } = await import('firebase/auth');
-      const auth = getAuth();
       await signOut(auth);
       
       toast.success("Account created successfully! Please log in.");

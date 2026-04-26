@@ -1,18 +1,17 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 
-// Pages
-
-import Login from './Pages/Login';
-import Home from './Pages/Home';
-import CompanyDashboard from './Pages/company/CompanyDashboard';
-import CompanyTokens from './Pages/company/CompanyTokens';
-import UserDashboard from './Pages/user/UserDashboard';
-import CompanyDetails from './Pages/user/CompanyDetails';
-import MyTokens from './Pages/user/MyTokens';
-import Signup from './Pages/Signup';
+// Lazy-loaded pages (enables code splitting per route)
+const Login = lazy(() => import('./Pages/Login'));
+const Home = lazy(() => import('./Pages/Home'));
+const Signup = lazy(() => import('./Pages/Signup'));
+const CompanyDashboard = lazy(() => import('./Pages/company/CompanyDashboard'));
+const CompanyTokens = lazy(() => import('./Pages/company/CompanyTokens'));
+const UserDashboard = lazy(() => import('./Pages/user/UserDashboard'));
+const CompanyDetails = lazy(() => import('./Pages/user/CompanyDetails'));
+const MyTokens = lazy(() => import('./Pages/user/MyTokens'));
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -85,7 +84,13 @@ function App() {
             backdropFilter: 'blur(12px)'
           }
         }} />
-        <AppRoutes />
+        <Suspense fallback={
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'var(--text-muted)' }}>
+            Loading...
+          </div>
+        }>
+          <AppRoutes />
+        </Suspense>
       </AuthProvider>
     </Router>
   );

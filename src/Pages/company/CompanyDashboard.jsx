@@ -120,7 +120,6 @@ export default function CompanyDashboard() {
                 onClick={async () => {
                   if (window.confirm("Are you sure you want to delete this company?")) {
                     try {
-                      const { deleteDoc, doc } = await import('firebase/firestore');
                       await deleteDoc(doc(db, "companies", company.id));
                       setCompanies(companies.filter(c => c.id !== company.id));
                       toast.success("Company deleted");
