@@ -2,9 +2,10 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
-export default defineConfig({
+// Base path: "/Company/" for GitHub Pages, "/" for Vercel/other hosts
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
-  base: "/Company/",
+  base: process.env.VITE_DEPLOY_TARGET === 'ghpages' ? '/Company/' : '/',
   build: {
     rollupOptions: {
       output: {
@@ -24,4 +25,4 @@ export default defineConfig({
       }
     }
   }
-})
+}))
